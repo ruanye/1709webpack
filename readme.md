@@ -31,10 +31,15 @@ npm uninstall 包名 npm unistall webpack -g -global 全局表示哪都能用
 
 ## 手动配置 webpack(0 配置很弱)
 
-- [x] 默认配置文件的名字是 webpack.config.js/webpackfile.js 通常使用 webpack.config.js
+- [x] 默认配置文件的名字(背)(webpack.config.js) webpack.config.js/webpackfile.js 通常使用 webpack.config.js
 - 在根目录创建
 - webpack 是基于 node 编写的
 - 有 webpack.config.js 运行命令就会走我们自己写的配置
+- --config 来指定 webpack 运行那个文件
+
+```js
+ "build": "webpack --config w.js",
+```
 
 ##  配置打包环境（记住）
 
@@ -101,14 +106,16 @@ filename:'bundle[hash].js'
 filename:'bundle[hash:8].js'
 ```
 
-## 处理 html
+## 处理 html 自动引入 js
 
+- plugin 插件 plugins 插件们 数组[插件 1,插件 2,插件 3]
 - src
-
   - index.js
+- public
+
   - index.html
 
-- [x] yarn add html-webpack-plugin -D||npm install html-webpack-plugin
+- npm install html-webpack-plugin -D (记住)
 - 当有插件的时候需要配置 plugins 插件集合类型是数组
 - 每一个插件都是通过 new 来调用，例：new HtmlWebpackPlugin()
 - 可以运行 npm run dev/npm run build 查看结果
@@ -126,56 +133,40 @@ filename:'bundle[hash:8].js'
 }
 ```
 
-## 处理样式 在 webpack 里面一切皆模块
+## 处理样式
 
 - src
+- index.js
+- a.css
+- public
 
   - index.html
-  - index.js
-  - style.css
 
-- . index.js 通过 require require('/style.css') 报错如下
+- index.html 是模块 不建议在里面引入东西
+- . index.js 通过 报错如下
 
 ```
 You may need an appropriate loader to handle this file type
 appropriate  合适的
 你可能需要一个合适的loader
+在 webpack 会把js,css,图片都看成模块，每一个模块都需要对应的模块解析器（loader）来解析
 ```
 
 - . 配置 module,配置 rules 数组，表示很多规则，用正在匹配 js、css 等,rules 里面配置不容的 loader,每个 loader 的配置都是一个对象
 
-```
-module:{
-  rules:[]
-}
-```
+- 下载 npm install css-loader style-loader -D
+- css-loader 作用 解析 require 和 import 语法
+- style-loader 把 css 插入到 style 标签中
 
-loader 的配置方法 test 匹配规则 use 使用什么 loader
-yarn add css-loader style-loader -D||
-npm install css-loader style-loader -D
-
-- test 表示什么文件使用当前的 loader 用正则配置
 - use 的用法
-
 1. 字符串 只能写一个 loader
    use:'css-loader'
 2. 数组 可以写多个 loader 数组里面可以放字符串和对象
    css-loader 解析 require/import 语法
    style-loader 把 css 插入到 header 标签中
+   use:['style-loader','css-loader']
 
-use:['style-loader','css-loader']
-loader 的执行顺序是从右到左执行 从下到上
-
-```
-rules:[
- {
-     test:'/\.css$/',//匹配以css结尾的文件
-     use:[]
- }
-]
-```
-
-- .use 可以直接写 loader，也可以写成对象，写对象的时候可以进行配置
+3. use 可以直接写 loader，也可以写成对象，写对象的时候可以进行配置
   options 可以做一些自定义的配置
 
 ```
@@ -211,6 +202,8 @@ rules:[
  }
 ```
 
+## loader 的执行顺序 
+  - 从下到上 从右到左 
 ## 抽离 css
 
 - [x] yarn add mini-css-extract-plugin -D
