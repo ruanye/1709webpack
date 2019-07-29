@@ -135,12 +135,13 @@ filename:'bundle[hash:8].js'
 
 ## 处理样式
 
+> 目录结构
+
 - src
 - index.js
 - a.css
 - public
-
-  - index.html
+- index.html
 
 - index.html 是模块 不建议在里面引入东西
 - . index.js 通过 报错如下
@@ -159,15 +160,11 @@ appropriate  合适的
 - style-loader 把 css 插入到 style 标签中
 
 - use 的用法
+
 1. 字符串 只能写一个 loader
    use:'css-loader'
-2. 数组 可以写多个 loader 数组里面可以放字符串和对象
-   css-loader 解析 require/import 语法
-   style-loader 把 css 插入到 header 标签中
-   use:['style-loader','css-loader']
-
-3. use 可以直接写 loader，也可以写成对象，写对象的时候可以进行配置
-  options 可以做一些自定义的配置
+2. use 可以直接写 loader，也可以写成对象，写对象的时候可以进行配置
+   options 可以做一些自定义的配置
 
 ```
  {
@@ -177,19 +174,26 @@ appropriate  合适的
   }
 ```
 
+3. 数组 可以写多个 loader 数组里面可以放字符串和对象
+   css-loader 解析 require/import 语法
+   style-loader 把 css 插入到 header 标签中
+   use:[{loader:'style-loader'},'css-loader']
+
+> 目录结构
+
 - src
+- index.js
+- a.css
+- b.less
+- public
+- index.html
 
-  - index.html
-  - index.js
-  - style.css
-  - b.less
-
-- 配置 less 编译(less->css) 因为从右向左，从下到上执行 所以写在下边和右边
-  yarn add less less-loader -D
-- 编译 sass
-  node-sass sass-loader -D
-- 编译 stylus
-  stylus stylus-loader -D
+- 配置 less 编译(less->css)
+  npm install less less-loader -D
+- 编译 sass 编译(scss->css)
+  npm install node-sass sass-loader -D
+- 编译 stylus 编译(stylus->css)
+  npm install stylus stylus-loader -D
 
 ```
   {
@@ -202,11 +206,13 @@ appropriate  合适的
  }
 ```
 
-## loader 的执行顺序 
-  - 从下到上 从右到左 
+## loader 的执行顺序
+
+- 从下到上 从右到左
+
 ## 抽离 css
 
-- [x] yarn add mini-css-extract-plugin -D
+- [x] npm install mini-css-extract-plugin -D
 - MiniCssExtractPlugin 插件自带一个 loader
 - MiniCssExtractPlugin.loader 会自动把 css 抽离出来 作为引用的方式引入页面 
 
@@ -225,56 +231,42 @@ appropriate  合适的
 
 ## 使用 postcss-loader,autoprefixer 添加浏览器前缀
 
-- [x] yarn add postcss-loader autoprefixer -D
+- [x] npm install postcss-loader autoprefixer -D
 - autoprefixer 自动添加浏览器前缀的插件
 - 安装 postcss 插件
-  yarn add postcss-preset-env -D 允许使用 css 未来特性的插件
-
-```
-{
-  test:/\.less$/,
-  use:[
-     MiniCssExtractPlugin.loader,
-    'css.loader',
-    'less-loader',
-    'postcss-loader'
-  ]
-}
-```
-
+  npm install postcss-preset-env -D 允许使用 css 未来特性的插件
 - [x] 需要配置 postcss 默认文件 名字
       在根目录下创建 postcss.config.js/.postcssrc.js
 
+```js
+//postcss.config.js 的配置
+//允许你使用未来的 CSS 特性。
+const postcssPresetEnv = require("postcss-preset-env");
+// 自动添加浏览器前缀
+const autoprefixer = require("autoprefixer");
+module.exports = {
+  plugins: [postcssPresetEnv, autoprefixer({})]
+};
+```
+
+- 在根目录下面建立一个 .browserslistrc 文件
+  配置需要兼容什么浏览器版本 也可以在 package.json 的 browerlist 字段配置
+
+{
+test:/\.less\$/,
+use:[
+MiniCssExtractPlugin.loader,
+'css.loader',
+'less-loader',
+'postcss-loader'
+]
+}
+
+```
 * 放到所有 cssloader 后面，执行顺序原因
 
-```
- npm run dev 的时候会报错
- Error: No PostCSS Config found in: /Users/ruanye/Desktop/project/src
- 没有找到postcss的默认文件
-```
 
-- [x] postcss.config.js 文件里面的内容：
 
-```
- module.exports={
-    plugins:[require('autoprefixer')]
-  }
-```
-
-```
-/允许你使用未来的 CSS 特性。
-const postcssPresetEnv = require('postcss-preset-env');
-// 自动添加浏览器前缀
-const autoprefixer = require('autoprefixer');
-module.exports = {
-    plugins: [
-      postcssPresetEnv,
-      autoprefixer({})
-    ]
-  };
-```
-
-- 在使用 autoprefixer 做兼容性前缀时，我们要指定浏览器版本来确定在指定版本中添加兼容性前缀。可以在 package.json 中的 browserslist 字段中指定。或者单独建立一个.browserslistrc 文件
 
 ## 处理 js es6 转化成 es5
 
@@ -287,16 +279,18 @@ module.exports = {
 - yarn add @babel/polyfill 已经废弃
 
 ```
+
 {
-  "presets": [
-    [
-      "@babel/preset-env",
-      {
-        "useBuiltIns": "entry"  自动注入依赖
-      }
-    ]
-  ]
+"presets": [
+[
+"@babel/preset-env",
+{
+"useBuiltIns": "entry" 自动注入依赖
 }
+]
+]
+}
+
 ```
 
 - useBuiltIns 需要依赖 core-js
@@ -312,8 +306,10 @@ module.exports = {
   需要下载 yarn add @babel/runtime-corejs2
 
 ```
- 在runtime插件里配置core-js的好处
- 创建一个沙箱坏境(干净的坏境，代码不受外部的任何影响)
+
+在 runtime 插件里配置 core-js 的好处
+创建一个沙箱坏境(干净的坏境，代码不受外部的任何影响)
+
 ```
 
 ## 配置需要解析和不需要解析 loader 的文件路径
@@ -322,17 +318,19 @@ module.exports = {
 - [x] exclude 不包含 exclude:/node_modules/
 
 ```
+
 {
-       test:/\.js$/,
-				use:{
-					loader:'babel-loader',
-					options:{
-            ...
-          }
-        },
-				include:path.resolve(__dirname,'src'),
-			  exclude:/node_modules/
- }
+test:/\.js\$/,
+use:{
+loader:'babel-loader',
+options:{
+...
+}
+},
+include:path.resolve(\_\_dirname,'src'),
+exclude:/node_modules/
+}
+
 ```
 
 ## babel 也可以独立进行配置，文件名字.babelrc
@@ -340,12 +338,14 @@ module.exports = {
 - 配置的时候 loader 直接写成 use:'babel-loader',其他配置写在.babelrc 里面
 
 ```
- {
-   presets:['@babel/preset-env'],
-   plugins:[
-     ....
-   ]
- }
+
+{
+presets:['@babel/preset-env'],
+plugins:[
+....
+]
+}
+
 ```
 
 - 如果 webpack options 对 babel-loader 进行了配置 不需要.babelrc 文件 如果有的就删除
@@ -356,42 +356,50 @@ module.exports = {
 - 初始化 eslint 配置文件
 
 ```
+
 npx eslint --init
+
 ```
 
 - [x] 添加 enforce pre 强制先执行 previous 前置 loader
 
 ```
+
 {
-  enforce:'pre',
-  test:'/\.js$/',
-  loader:'eslint-loader',
+enforce:'pre',
+test:'/\.js\$/',
+loader:'eslint-loader',
 }
+
 ```
 
 desServer 下配置项 有报错的时候出现透明的遮罩层,一般不配置
 
 ```
+
 desServer{
 overlay: true,
 ...
 }
+
 ```
 
 ## \* 配置优化项
 
-- yarn add optimize-css-assets-webpack-plugin  
+- yarn add optimize-css-assets-webpack-plugin
   terser-webpack-plugin -D
   optimize: 优化 assets:资源
   optimize-css-assets-webpack-plugin 压缩 css 的
   terser-webpack-plugin 压缩 js 的 uglify 不支持 es6
 
 ```
+
 optimization: { 优化
-    minimizer: [
-      new OptimizeCssAssetsWebpackPlugin({}), new TerserWebpackPlugin({})
-    ]
-  }
+minimizer: [
+new OptimizeCssAssetsWebpackPlugin({}), new TerserWebpackPlugin({})
+]
+}
+
 ```
 
 - mode 改成 production
@@ -406,16 +414,20 @@ optimization: { 优化
 1. 内联 loader 的方式配置 基本不使用 
 
 ```
-  import $ from "expose-loader?$!jquery"
+
+import $ from "expose-loader?$!jquery"
+
 ```
 
 2. 正常 loader 配置
 
 ```
+
 {
-  test:require.resolve('jquery'),
-  loader:"expose-loader?$"
+test:require.resolve('jquery'),
+loader:"expose-loader?\$"
 }
+
 ```
 
 3. 通过 webpack 提供的内置插件
@@ -425,11 +437,13 @@ optimization: { 优化
 - 在每个模块中注入$对象 不需要引入可以直接使用$这里 window.\$是 undefined;
 
 ```
+
 let webpack = require('webpack')
 ...
- new webpack.ProvidePlugin({
-      $:"jquery"
-    })
+new webpack.ProvidePlugin({
+\$:"jquery"
+})
+
 ```
 
 ## 配置忽略打包项(主要是引入 cdn 资源的时候)
@@ -437,9 +451,11 @@ let webpack = require('webpack')
 105 KiB 18.2 KiB
 
 ```
+
 externals:{
-    jquery:"jQuery"
+jquery:"jQuery"
 }
+
 ```
 
 ## 通过插件引入 cdn 资源(web 前端优化的一种手段)
@@ -447,11 +463,13 @@ externals:{
 yarn add add-asset-html-cdn-webpack-plugin
 
 ```
+
 new AddAssetHtmlCdnWebpackPlugin(true, {
-     jquery: 'https://cdn.bootcss.com/jquery/3.4.1/jquery.js',
-     vue: '//cdn.bootcss.com/vue/2.5.16/vue.min.js',
-     vueRouter: '//cdn.bootcss.com/vue-router/3.0.1/vue-router.min.js',
- }),
+jquery: 'https://cdn.bootcss.com/jquery/3.4.1/jquery.js',
+vue: '//cdn.bootcss.com/vue/2.5.16/vue.min.js',
+vueRouter: '//cdn.bootcss.com/vue-router/3.0.1/vue-router.min.js',
+}),
+
 ```
 
 ## 在 webpack 中引入图片的几种方式
@@ -471,8 +489,10 @@ new AddAssetHtmlCdnWebpackPlugin(true, {
    会在内存里面创建一个新的图片
 
 ```
+
 You may need an appropriate loader to handle this file type
-你需要一个合适的loader去处理这个文件类型
+你需要一个合适的 loader 去处理这个文件类型
+
 ```
 
 2. 在 css 引入 background(url)
@@ -485,19 +505,23 @@ yarn add file-loader html-withimg-loader url-loader -D
 file-loader
 
 ```
+
 {
-  test:/\.(png,jpg,gif)$/,
-  user:'file-loader'
+test:/\.(png|jpg|gif)\$/,
+user:'file-loader'
 }
+
 ```
 
 - [x] 在 html 引入图片打包会找不到文件 需要使用 html-withimg-loader 解决打包之后路径不对的问题
 
 ```
+
 {
-  test:/\.html$/,
-  user:'html-withimg-loader'
+test:/\.html\$/,
+user:'html-withimg-loader'
 }
+
 ```
 
 - 小图片转化成 base64 =>前端优化
@@ -519,21 +543,23 @@ file-loader
 - file-loader 字体话一般建议用 file-loader，字体转 64 可能存在无法识别 file-loader 就是简单的复制粘贴
 
 ```
+
 {
-     test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/,
-        loader: 'url-loader',
-        options: {
-          limit: 0,
-        }
-      },
-      {
-        test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
-        loader: 'url-loader',
-        options: {
-          limit: 0
+test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?._)?\$/,
+loader: 'url-loader',
+options: {
+limit: 0,
+}
+},
+{
+test: /\.(woff2?|eot|ttf|otf)(\?._)?\$/,
+loader: 'url-loader',
+options: {
+limit: 0
 
         }
       }
+
 ```
 
 ## \* 打包文件分类
@@ -549,7 +575,7 @@ file-loader
    })
 3. js 添加到 filename 前面
    filename:'js/main[hash].js',
-4. 添加域名 publicPath 的用法  
+4. 添加域名 publicPath 的用法
    output: {
    filename: 'bundle.js',
    path: path.resolve(\_\_dirname, 'build'),
@@ -585,40 +611,44 @@ file-loader
 - 入口需要配置成对象
 
 ```
+
 entry:{
-		home:'./src/index.js'
-		other:'./src/other.js'
-	}
+home:'./src/index.js'
+other:'./src/other.js'
+}
+
 ```
 
 - 出口需要多个出口，改变 filename 的写法
   filename:'[name.js]'
 - 保证 html 页面引入自己对应的 js
-  使用 chunks 代码块 来完成  
-  chunks:['home']  
+  使用 chunks 代码块 来完成
+  chunks:['home']
   如果 home 也许使用 other
   chunks:['home','other']
 
 ```
-  let pages = [{
-    filename:'index.html',
-    chunk:'index'
+
+let pages = [{
+filename:'index.html',
+chunk:'index'
 },{
-    filename:'login.html',
-    chunk:'login'
+filename:'login.html',
+chunk:'login'
 }].map((item)=>{ // webpack splitChunks 可以配置公共文件的
-    return new HtmlWebpackPlugin({ // 配置输出的html格式
-        filename:item.filename,
-        title:'hello',
-        minify:{
-            removeAttributeQuotesd:true,
-            collapseWhitespace:true,
-        },
-        chunks:[item.chunk], // 设置引用的代码块
-        hash:true, // ? 后面的名字
-        template:'./public/index.html'
-    })
+return new HtmlWebpackPlugin({ // 配置输出的 html 格式
+filename:item.filename,
+title:'hello',
+minify:{
+removeAttributeQuotesd:true,
+collapseWhitespace:true,
+},
+chunks:[item.chunk], // 设置引用的代码块
+hash:true, // ? 后面的名字
+template:'./public/index.html'
 })
+})
+
 ```
 
 ## 配置 soure-map 源码映射
@@ -626,7 +656,9 @@ entry:{
 文档地址 :https://webpack.docschina.org/configuration/devtool/
 
 ```
- devtool:'source-map'
+
+devtool:'source-map'
+
 ```
 
 - source-map 会单独生成一个 sourcemap 文件 可以帮我们调试源代码 会显示当前报错的列和行
@@ -643,11 +675,13 @@ watch:true
 - 监控的选项
 
 ```
+
 watchOptions:{
-	poll:1000  //每秒问我多少次
-	aggreatmentTimeout:500 //防抖 一直输入代码
-	ignored:/node_modules/
+poll:1000 //每秒问我多少次
+aggreatmentTimeout:500 //防抖 一直输入代码
+ignored:/node_modules/
 }
+
 ```
 
 ##配置环境变量
@@ -655,10 +689,12 @@ node 提供的环境变量:process.env.NODE_ENV
 根据 wepack 配置的 mode 值
 
 ```
+
 new webpack.DefinePlugin({
-       // 字符串必须要包两层
-     'production':JSON.stringify('production'),
- }),
+// 字符串必须要包两层
+'production':JSON.stringify('production'),
+}),
+
 ```
 
 ## webpack 处理 跨域问题
@@ -671,15 +707,17 @@ new webpack.DefinePlugin({
 - pathRewrite 重写路径 /api/user 等于访问 localhost:3000/user
 
 ```
- devServer:{
- ...
- proxy:{ //
-      '/api':{
-         target:'http://localhost:3000',
-         pathRewrite:{'/api':''}
-       }// 配置了一个代理
-   }
+
+devServer:{
+...
+proxy:{ //
+'/api':{
+target:'http://localhost:3000',
+pathRewrite:{'/api':''}
+}// 配置了一个代理
 }
+}
+
 ```
 
 2.  直接使用 webpack 提供 mock 数据 webpack 自带 express
@@ -688,11 +726,13 @@ new webpack.DefinePlugin({
 - 参数是 app app 就是 let app= express()
 
 ```
-   before(app){
-       app.get('/user',(req,res)=>{
-         res.json({name:'leilei'})
-       })
-    }
+
+before(app){
+app.get('/user',(req,res)=>{
+res.json({name:'leilei'})
+})
+}
+
 ```
 
 3. 可以直接在 node 的服务端启动 webpack 端口是服务端端口 不在需要 npm run dev 来启动 webpack
@@ -701,6 +741,7 @@ new webpack.DefinePlugin({
   server.js 修改如下
 
 ```
+
 let webpack = require('webpack');
 
 let middle = require('webpack-dev-middleware');
@@ -710,6 +751,7 @@ let config = require('./webpack.config.js');
 let compiler = webpack(config);
 
 app.use(middle(compiler));
+
 ```
 
 ## resolve 用法
@@ -720,15 +762,17 @@ mainFields 可以配置先找哪个入口
 mainFiles：入口文件的名字
 
 ```
+
 resolve:{
-    modules:[path.resolve('node_modules')],
-    extensions:['.js','.css','.json','.vue'],
-    mainFields:['style','main']
-    mainFiles:[], // 入口文件的名字 index.js
-    alias:{
-       bootstrap:'bootstrap/dist/css/bootstrap.css'
-    }
- }
+modules:[path.resolve('node_modules')],
+extensions:['.js','.css','.json','.vue'],
+mainFields:['style','main']
+mainFiles:[], // 入口文件的名字 index.js
+alias:{
+bootstrap:'bootstrap/dist/css/bootstrap.css'
+}
+}
+
 ```
 
 ## 区分环境
@@ -739,40 +783,47 @@ webpack.config.js 改成 webpack.base.js
 - 配置开发环境的写法
 
 ```
+
 webpack.dev.js
 let {smart} = require('webpack-merge');
 let base = require('./webpack.base.js');
 
 module.exports = smart(base,{
-   mode: 'development',
-   devServer:{
+mode: 'development',
+devServer:{
 
-   },
-   devtool:'source-map'
+},
+devtool:'source-map'
 })
+
 ```
 
 - 配置生产环境的写法
 
 ```
+
 let {smart} = require('webpack-merge');
 let base = require('./webpack.base.js');
 
 module.exports = smart(base,{
-   mode: 'production',
-   optimization:{
-     minimizer:[
+mode: 'production',
+optimization:{
+minimizer:[
 
      ]
-   },
-   plugins:[]
+
+},
+plugins:[]
 })
+
 ```
 
 最新配置方案
 
 ```
-package.json配置
+
+package.json 配置
+
 ```
 
 scripts": {
@@ -781,16 +832,18 @@ scripts": {
 }
 
 ```
+
 let merge = require('webpack-merge');
 module.exports = (env) => {
-  console.log(process.env.xxx); // 可以通过cross-env 来设置环境变量
-  if(env.production){
-    // 生产环境
-    return merge(base,prod);
-  }else{
-    return merge(base,dev);
-  }
+console.log(process.env.xxx); // 可以通过 cross-env 来设置环境变量
+if(env.production){
+// 生产环境
+return merge(base,prod);
+}else{
+return merge(base,dev);
 }
+}
+
 ```
 
 ## webpack 优化
@@ -800,7 +853,7 @@ module.exports = (env) => {
 package.json 配置副作用(只对 es6 语法有效果)
 
 - sideEffects:false 副作用的文件不打包
-- 要使用哪些副作用  
+- 要使用哪些副作用
   "sideEffects": [
   "*.css"
   ]
@@ -813,10 +866,12 @@ usedExports:true // 在开发中可以看到哪个包/方法被使用了，其�
 2. 自带优化 scope-hosting 作用域提升
 
 ```
+
 let a = 1;
 let b= 2;
 let c = a+b;
 console.log(c);
+
 ```
 
 > 把变量进行压缩，去提取模块中的导出的变量
@@ -835,6 +890,7 @@ console.log(c);
 - a.js 内容
 
 ```
+
 export default 1234;
 export const b = 3;
 
@@ -843,14 +899,16 @@ export const b = 3;
 - index.js 内容
 
 ```
+
 let btn = document.createElement('button');
 btn.innerHTML = '点击实现异步加载';
 btn.addEventListener('click', async function() {
-  //返回的是一个promise jsonp原理实现的
-  let res = await import('./a');
-  console.log(res);
+//返回的是一个 promise jsonp 原理实现的
+let res = await import('./a');
+console.log(res);
 });
 document.body.appendChild(btn);
+
 ```
 
 6. 热更新(浏览器强制刷新叫做硬更新),热更新就是代码修改之后浏览器不需要刷新 css-loader 本身支持热更新
@@ -858,21 +916,27 @@ document.body.appendChild(btn);
 - devServer 配置
 
 ```
+
 devServer:{
-  hot:true
+hot:true
 }
+
 ```
 
 - plugins 里面配置热更新插件
 
 ```
+
 new webpack.HotModuleReplacementPlugin()
+
 ```
 
 - 代码里面的写法
 
 ```
-热更新文件夹里面
+
+ 热更新文件夹里面
+
 ```
 
 7. IgnorePlugin 忽略 webpack 内置插件 以 mement 库为例 直接使用会引入所有的语言包 配置忽略项之后我们只需要手动引入我们需要的语言包 打包的时候只打包需要的
@@ -881,21 +945,25 @@ new webpack.HotModuleReplacementPlugin()
 - index.js 内容
 
 ```
- import moment from 'moment';
- 设置语言
 
- 手动引入所需要的语言
- import 'moment/locale/zh-cn'
+import moment from 'moment';
+设置语言
 
- moment.locale('zh-cn');
- let r = moment().endOf('day').fromNow();
- console.log(r);
+手动引入所需要的语言
+import 'moment/locale/zh-cn'
+
+moment.locale('zh-cn');
+let r = moment().endOf('day').fromNow();
+console.log(r);
+
 ```
 
 - 插件写法
 
 ```
+
 new webpack.IgnorePlugin(/\.\/locale/, /moment/)
+
 ```
 
 5. happypack 可以使用多线程来打包
@@ -905,58 +973,65 @@ new webpack.IgnorePlugin(/\.\/locale/, /moment/)
 - js 多线程打包 改变 babel-loader 的写法
 
 ```
+
 {
-      test: /\.js$/,
-      ...
-      use: {
-          loader: 'happypack/loader?id=js'
-      }
- }
- new Happypack({
-      id:js,
-      use:'babel-loader',
-   })
+test: /\.js\$/,
+...
+use: {
+loader: 'happypack/loader?id=js'
+}
+}
+new Happypack({
+id:js,
+use:'babel-loader',
+})
+
 ```
 
 - css 也可以实现多线程打包
 
 ```
+
     {
       test: /\.css$/,
       use: 'Happypack/loader?id=css'
     }
-   new Happypack({
-      id: 'css',
-      use: ['style-loader', 'css-loader']
-    })
+
+new Happypack({
+id: 'css',
+use: ['style-loader', 'css-loader']
+})
+
 ```
 
 6. 抽离公共代码(多入口)
 
 ```
+
 optimization:{ // commonChunkPlugins
-    splitChunks:{ // 分割代码块
-      cacheGroups:{ // 缓存组
-        common:{ // 公共的模块
-          chunks:'initial',
-          minSize:0,
-          minChunks:2,
-        },
-        vendor:{ //第三方模块
-          priority:1, //权重
-          test:/node_modules/, // 把你抽离出来
-          chunks: 'initial',
-          minSize: 0,
-          minChunks: 2
-        }
-      }
-    }
-  }
+splitChunks:{ // 分割代码块
+cacheGroups:{ // 缓存组
+common:{ // 公共的模块
+chunks:'initial',
+minSize:0,
+minChunks:2,
+},
+vendor:{ //第三方模块
+priority:1, //权重
+test:/node_modules/, // 把你抽离出来
+chunks: 'initial',
+minSize: 0,
+minChunks: 2
+}
+}
+}
+}
+
 ```
 
 wepack 框架配置 vue 的使用
 
-- 使用 vue 模板需要写 template  
+- 使用 vue 模板需要写 template
   yarn add vue vue-loader vue-template-compiler
 - vue-loader 解析 vue 文件
 - vue-template-compiler 解析 vue 中的 template
@@ -974,26 +1049,30 @@ wepack 框架配置 vue 的使用
 2. vue-loader 需要使用 vueLoaderPlugin 插件
 
 ```
+
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
- plugins: [
-   new VueLoaderPlugin()
-   ]
- }
+plugins: [
+new VueLoaderPlugin()
+]
+}
+
 ```
 
 3. 配置 loader 解析 vue 文件
 
 ```
-   module.exports = {
-   module: {
-   rules: [
-   ...
-   {
-   test: /\.vue$/,
-   loader: 'vue-loader'
-   }
-   ]
-   },
+
+module.exports = {
+module: {
+rules: [
+...
+{
+test: /\.vue$/,
+loader: 'vue-loader'
+}
+]
+},
+
 ```
 
 VueLoaderPlugin 这个插件的职责是将你定义过的其它规则复制并应用到 .vue 文件里相应语言的块。例如，如果你有一条匹配 /\.js\$/ 的规则，那么它会应用到 .vue 文件里的 <script> 块。
@@ -1018,6 +1097,7 @@ fallback: 'vue-style-loader' // 这是 vue-loader 的依赖
 ]
 
 ```
+
 <template>
     <div class="divWrap"></div>
 </template>

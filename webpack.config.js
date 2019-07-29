@@ -2,6 +2,8 @@
 let path = require("path"); //node的路径模块
 //引入html插件html的webpack插件
 let HtmlWebpackPlugin = require("html-webpack-plugin");
+let MiniCssExtractPlugin = require("mini-css-extract-plugin");
+
 // module.exports -> node的模块导出
 module.exports = {
   mode: "production", //开发环境 development    生产环境 production
@@ -28,26 +30,30 @@ module.exports = {
         collapseWhitespace: true, //折叠去除空格
         removeAttributeQuotes: true //去除引号
       }
+    }),
+    new MiniCssExtractPlugin({
+      filename: "index.css" //抽离出来的css的文件名称 默认是main.css
     })
   ],
   module: {
-    //模块处理
+    //模块处理 loader 模块解析器
     rules: [
       //rule规则 一堆规则 每一条规则是一个对象
       {
-        test: /\.css$/,
+        test: /\.(css|less)$/,
         use: {
           //写成对对象的时候可以加一些自定义的配置
-          loader: "style-loader",
-          options: {
-            //写一些自定义配置
-            insertAt: "bottom" //把样式添加到顶部或者底部
-          }
+          loader: MiniCssExtractPlugin.loader //负责抽离css
+          //loader: "style-loader" //插入到style
         }
       },
       {
-        test: /\.css$/, //正则匹配文件类型
-        use: "css-loader" //use 使用  使用什么样loadder
+        test: /\.(css|less)$/, //正则匹配文件类型
+        use: ["css-loader", "postcss-loader"] //use 使用  使用什么样loadder
+      },
+      {
+        test: /\.less$/,
+        use: ["less-loader", "postcss-loader"]
       }
     ]
   }
