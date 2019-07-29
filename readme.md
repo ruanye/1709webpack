@@ -207,11 +207,9 @@ appropriate  合适的
 ```
 
 ## loader 的执行顺序
-
 - 从下到上 从右到左
 
 ## 抽离 css
-
 - [x] npm install mini-css-extract-plugin -D
 - MiniCssExtractPlugin 插件自带一个 loader
 - MiniCssExtractPlugin.loader 会自动把 css 抽离出来 作为引用的方式引入页面 
@@ -222,7 +220,6 @@ appropriate  合适的
     })
 
 ```
-
 - [x] 在 loader 里面的写法
 
 ```
@@ -252,6 +249,7 @@ module.exports = {
 - 在根目录下面建立一个 .browserslistrc 文件
   配置需要兼容什么浏览器版本 也可以在 package.json 的 browerlist 字段配置
 
+```js
 {
 test:/\.less\$/,
 use:[
@@ -263,125 +261,86 @@ MiniCssExtractPlugin.loader,
 }
 
 ```
-* 放到所有 cssloader 后面，执行顺序原因
 
+## 处理 js es6 转化成 es5 (babel)
 
-
-
-## 处理 js es6 转化成 es5
-
-- [x] yarn add babel-loader @babel/core @babel/preset-env
+- npm install babel-loader @babel/core @babel/preset-env
 
 @babel/core babel 核心模块
 @babel-preset-env 标准语法转化成低级语法
 
 - presets 预设插件 比如定案的 promise 是不会被转化的
-- yarn add @babel/polyfill 已经废弃
+- npm install @babel/polyfill 已经废弃
+- 独立进行配置，文件名字 .babelrc
+- 配置 loader
+- 配置.babelrc 文件
 
+```js
+{
+  presets: ["@babel/preset-env"];
+}
 ```
 
-{
-"presets": [
-[
-"@babel/preset-env",
-{
-"useBuiltIns": "entry" 自动注入依赖
-}
-]
-]
-}
-
-```
-
-- useBuiltIns 需要依赖 core-js
-
-- npm install --save core-js@2
-
-- [x] yarn add @babel/plugin-transform-runtime @babel/runtime
+- [x] npm install @babel/plugin-transform-runtime @babel/runtime
 - @babel/plugin-transform-runtime 是依赖于 @babel/runtime 的
 - @babel/runtime 是生产环境也需要的下载的时候不要加-D
 - 作用 @babel/plugin-transform-runtime 去除重复代码
-  第二种写法
   @babel/plugin-transform-runtime 去注入 core-js
-  需要下载 yarn add @babel/runtime-corejs2
-
-```
-
-在 runtime 插件里配置 core-js 的好处
-创建一个沙箱坏境(干净的坏境，代码不受外部的任何影响)
-
-```
+  需要下载 npm install @babel/runtime-corejs2(必须下)
+  ```js
+  {
+  "presets": ["@babel/preset-env"],
+  "plugins": [
+    [
+      "@babel/plugin-transform-runtime",
+      {
+        "corejs": 2
+      }
+    ],
+    "@babel/plugin-syntax-dynamic-import"
+  ]
+  }
+  ```
 
 ## 配置需要解析和不需要解析 loader 的文件路径
 
 - [x] include 包含 include:path.resolve(\_\_dirname,'src'),
-- [x] exclude 不包含 exclude:/node_modules/
+- [x] exclude 不包含 exclude:/node_modules/ 不去匹配 node_moudle 下面的文件
 
-```
-
+```js
 {
 test:/\.js\$/,
-use:{
-loader:'babel-loader',
-options:{
-...
-}
-},
+use:'babel-loader',
 include:path.resolve(\_\_dirname,'src'),
 exclude:/node_modules/
 }
-
 ```
-
-## babel 也可以独立进行配置，文件名字.babelrc
-
-- 配置的时候 loader 直接写成 use:'babel-loader',其他配置写在.babelrc 里面
-
-```
-
-{
-presets:['@babel/preset-env'],
-plugins:[
-....
-]
-}
-
-```
-
-- 如果 webpack options 对 babel-loader 进行了配置 不需要.babelrc 文件 如果有的就删除
 
 ## js 语法校验
 
-- yarn add eslint eslint-loader -D
+- npm install eslint eslint-loader -D
 - 初始化 eslint 配置文件
-
 ```
-
-npx eslint --init
-
+ npx eslint --init
 ```
 
 - [x] 添加 enforce pre 强制先执行 previous 前置 loader
 
-```
-
+```js
 {
-enforce:'pre',
-test:'/\.js\$/',
-loader:'eslint-loader',
+ enforce:'pre',
+ test:'/\.js\$/',
+ loader:'eslint-loader',
 }
 
 ```
 
 desServer 下配置项 有报错的时候出现透明的遮罩层,一般不配置
 
-```
-
+```js
 desServer{
-overlay: true,
-...
+ overlay: true,
 }
-
 ```
 
 ## \* 配置优化项
