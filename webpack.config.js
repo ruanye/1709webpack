@@ -1,12 +1,15 @@
 // webpack 基于node的 自带了express
 const path = require('path'); // node的路径模块
+const webpack = require('webpack');
 // 引入html插件html的webpack插件
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-
+const OptimizeCssAssetsWebpackPlugin = require('optimize-css-assets-webpack-plugin');
+const TerserWebpackPlugin = require('terser-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 // module.exports -> node的模块导出
 module.exports = {
-  mode: 'development', // 开发环境 development    生产环境 production
+  mode: 'production', // 开发环境 development    生产环境 production
   devServer: {
     port: '3001', // port 服务的端口号 0 -65500
     contentBase: './dist',
@@ -35,15 +38,15 @@ module.exports = {
     new MiniCssExtractPlugin({
       filename: 'index.css', // 抽离出来的css的文件名称 默认是main.css
     }),
+    new webpack.ProvidePlugin({
+      $: 'jquery',
+    }),
+    new CleanWebpackPlugin({}),
+    new webpack.BannerPlugin('版权所有人张思博,盗版必究'),
   ],
   module: {
     // 模块处理 loader 模块解析器
     rules: [
-      {
-        enforce: 'pre',
-        test: /\.js$/,
-        use: 'eslint-loader',
-      },
       // rule规则 一堆规则 每一条规则是一个对象
       {
         test: /\.(css|less)$/,
@@ -68,5 +71,13 @@ module.exports = {
         exclude: /node_modules/, // 不包含什么
       },
     ],
+  },
+  // 配置优化项
+  optimization: {
+    minimizer: [new TerserWebpackPlugin(), new OptimizeCssAssetsWebpackPlugin()],
+  },
+  externals: {
+    // 配置忽略打包项
+    jquery: 'jQuery',
   },
 };

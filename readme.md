@@ -207,9 +207,11 @@ appropriate  合适的
 ```
 
 ## loader 的执行顺序
+
 - 从下到上 从右到左
 
 ## 抽离 css
+
 - [x] npm install mini-css-extract-plugin -D
 - MiniCssExtractPlugin 插件自带一个 loader
 - MiniCssExtractPlugin.loader 会自动把 css 抽离出来 作为引用的方式引入页面 
@@ -220,6 +222,7 @@ appropriate  合适的
     })
 
 ```
+
 - [x] 在 loader 里面的写法
 
 ```
@@ -320,6 +323,7 @@ exclude:/node_modules/
 
 - npm install eslint eslint-loader -D
 - 初始化 eslint 配置文件
+
 ```
  npx eslint --init
 ```
@@ -345,88 +349,66 @@ desServer{
 
 ## \* 配置优化项
 
-- yarn add optimize-css-assets-webpack-plugin
+- npm install optimize-css-assets-webpack-plugin
   terser-webpack-plugin -D
-  optimize: 优化 assets:资源
-  optimize-css-assets-webpack-plugin 压缩 css 的
-  terser-webpack-plugin 压缩 js 的 uglify 不支持 es6
-
-```
-
-optimization: { 优化
-minimizer: [
-new OptimizeCssAssetsWebpackPlugin({}), new TerserWebpackPlugin({})
-]
+- optimize-css-assets-webpack-plugin 压缩 css 的
+- terser-webpack-plugin 压缩 js 的 uglify 不支持 es6
+optimize: 优化 assets:资源
+```js
+optimization: { //优化
+ minimizer: [
+ new OptimizeCssAssetsWebpackPlugin({}), new TerserWebpackPlugin({})
+ ]
 }
-
 ```
-
 - mode 改成 production
-- npm run build 打包之后 csss 是压缩过的
+- npm run build 打包之后 css 是压缩过的
 
 ## 第三方模块的使用 
-
-- yarn add jquery
-- yarn add expose-loader -D
+- loadash jquery 叫做第三方模块   
+- npm install jquery 
+- npm install expose-loader -D
 - expose-loader 负责把变量暴露给全局 loader
-
-1. 内联 loader 的方式配置 基本不使用 
-
+1. 内联 loader 的方式配置 基本不使用  
+- loader 分类 内联、普通、前置
+```js
+ import $ from "expose-loader?$!jquery"
 ```
-
-import $ from "expose-loader?$!jquery"
-
-```
-
 2. 正常 loader 配置
-
-```
-
+```js
 {
-test:require.resolve('jquery'),
-loader:"expose-loader?\$"
+ test:require.resolve('jquery'),
+ loader:"expose-loader?$"
 }
-
 ```
-
 3. 通过 webpack 提供的内置插件
-
-- 在 plugins 配置,ProvidePlugin webpack 自带插件
-- 自带插件都需要引入 webpcak 模块
-- 在每个模块中注入$对象 不需要引入可以直接使用$这里 window.\$是 undefined;
-
-```
-
+ - 在 plugins 配置,ProvidePlugin webpack 自带插件 Provide 提供 
+ - 自带插件都需要引入 webpcak 模块
+ - 在每个模块中注入$对象 不需要引入可以直接使用$这里 window.$是 undefined;
+```js
 let webpack = require('webpack')
-...
 new webpack.ProvidePlugin({
-\$:"jquery"
+  $:"jquery"
 })
 
 ```
-
 ## 配置忽略打包项(主要是引入 cdn 资源的时候)
 
 105 KiB 18.2 KiB
-
-```
-
+```js
 externals:{
-jquery:"jQuery"
+ jquery:"jQuery"
 }
-
 ```
 
 ## 通过插件引入 cdn 资源(web 前端优化的一种手段)
 
-yarn add add-asset-html-cdn-webpack-plugin
-
-```
-
+npm install add-asset-html-cdn-webpack-plugin
+```js 
 new AddAssetHtmlCdnWebpackPlugin(true, {
-jquery: 'https://cdn.bootcss.com/jquery/3.4.1/jquery.js',
-vue: '//cdn.bootcss.com/vue/2.5.16/vue.min.js',
-vueRouter: '//cdn.bootcss.com/vue-router/3.0.1/vue-router.min.js',
+ jquery: 'https://cdn.bootcss.com/jquery/3.4.1/jquery.js',
+ vue: '//cdn.bootcss.com/vue/2.5.16/vue.min.js',
+ vueRouter: '//cdn.bootcss.com/vue-router/3.0.1/vue-router.min.js',
 }),
 
 ```
@@ -460,8 +442,9 @@ You may need an appropriate loader to handle this file type
 
 ## 图片处理
 
-yarn add file-loader html-withimg-loader url-loader -D
-file-loader
+npm install  file-loader html-withimg-loader url-loader -D
+
+1. file-loader
 
 ```
 
@@ -516,8 +499,8 @@ loader: 'url-loader',
 options: {
 limit: 0
 
-        }
-      }
+   }
+ }
 
 ```
 
@@ -552,7 +535,7 @@ limit: 0
 
 ## webpcak 常用插件
 
-1. yarn add clean-webpack-plugin -D
+1. npm install clean-webpack-plugin -D
    清除缓存插件,可以写字符串 也可以写成数组
    new CleanWebpackPlugin();
    - 每次自动删除 dist 目录下的所有文件
