@@ -353,58 +353,73 @@ desServer{
   terser-webpack-plugin -D
 - optimize-css-assets-webpack-plugin 压缩 css 的
 - terser-webpack-plugin 压缩 js 的 uglify 不支持 es6
-optimize: 优化 assets:资源
+  optimize: 优化 assets:资源
+
 ```js
-optimization: { //优化
- minimizer: [
- new OptimizeCssAssetsWebpackPlugin({}), new TerserWebpackPlugin({})
- ]
+optimization: {
+  //优化
+  minimizer: [
+    new OptimizeCssAssetsWebpackPlugin({}),
+    new TerserWebpackPlugin({})
+  ];
 }
 ```
+
 - mode 改成 production
 - npm run build 打包之后 css 是压缩过的
 
 ## 第三方模块的使用 
-- loadash jquery 叫做第三方模块   
-- npm install jquery 
+
+- loadash jquery 叫做第三方模块
+- npm install jquery
 - npm install expose-loader -D
 - expose-loader 负责把变量暴露给全局 loader
-1. 内联 loader 的方式配置 基本不使用  
+
+1. 内联 loader 的方式配置 基本不使用 
+
 - loader 分类 内联、普通、前置
+
 ```js
- import $ from "expose-loader?$!jquery"
+import $ from "expose-loader?$!jquery";
 ```
+
 2. 正常 loader 配置
+
 ```js
 {
  test:require.resolve('jquery'),
  loader:"expose-loader?$"
 }
 ```
-3. 通过 webpack 提供的内置插件
- - 在 plugins 配置,ProvidePlugin webpack 自带插件 Provide 提供 
- - 自带插件都需要引入 webpcak 模块
- - 在每个模块中注入$对象 不需要引入可以直接使用$这里 window.$是 undefined;
-```js
-let webpack = require('webpack')
-new webpack.ProvidePlugin({
-  $:"jquery"
-})
 
+3. 通过 webpack 提供的内置插件
+
+- 在 plugins 配置,ProvidePlugin webpack 自带插件 Provide 提供 
+- 自带插件都需要引入 webpcak 模块
+- 在每个模块中注入$对象 不需要引入可以直接使用$这里 window.\$是 undefined;
+
+```js
+let webpack = require("webpack");
+new webpack.ProvidePlugin({
+  $: "jquery"
+});
 ```
+
 ## 配置忽略打包项(主要是引入 cdn 资源的时候)
 
 105 KiB 18.2 KiB
+
 ```js
-externals:{
- jquery:"jQuery"
+externals: {
+  jquery: "jQuery";
 }
 ```
 
 ## 通过插件引入 cdn 资源(web 前端优化的一种手段)
 
 npm install add-asset-html-cdn-webpack-plugin
-```js 
+
+```js
 new AddAssetHtmlCdnWebpackPlugin(true, {
  jquery: 'https://cdn.bootcss.com/jquery/3.4.1/jquery.js',
  vue: '//cdn.bootcss.com/vue/2.5.16/vue.min.js',
@@ -415,11 +430,12 @@ new AddAssetHtmlCdnWebpackPlugin(true, {
 
 ## 在 webpack 中引入图片的几种方式
 
+目录
+
 - src
   - index.js
-  - style.css
+  - a.css
   - b.less
-  - index.html
   - logo.png
 
 1. 在 js 中创建图片来引入
@@ -428,40 +444,33 @@ new AddAssetHtmlCdnWebpackPlugin(true, {
    img.src = logo
    document.body.appengChild(img)
    会在内存里面创建一个新的图片
-
-```
-
-You may need an appropriate loader to handle this file type
-你需要一个合适的 loader 去处理这个文件类型
-
-```
-
 2. 在 css 引入 background(url)
 
 3. <img src=''/> 需要把图片放到 dist 文件夹
 
 ## 图片处理
 
-npm install  file-loader html-withimg-loader url-loader -D
+npm install file-loader html-withimg-loader url-loader -D
 
 1. file-loader
 
-```
-
+```js
 {
-test:/\.(png|jpg|gif)\$/,
-user:'file-loader'
+ test:/\.(png|jpg|gif)\$/,
+ use:'file-loader'
 }
-
 ```
 
-- [x] 在 html 引入图片打包会找不到文件 需要使用 html-withimg-loader 解决打包之后路径不对的问题
+2. html-withimg-loader
 
+```html
+<img width="500px" height="500px" src="../src/logo.jpg" alt="" />
 ```
 
+```js
 {
-test:/\.html\$/,
-user:'html-withimg-loader'
+ test:/\.html\$/,
+ use:'html-withimg-loader'
 }
 
 ```
@@ -471,37 +480,38 @@ user:'html-withimg-loader'
 - 在图片小于多少 k 的时候可以做一个限制，用 base64 来转化,base64 大小会比原来文件大 3 分之 1 
 - 1024b = 1kb 1024kb = 1m 1g = 1024m
 - limit 限制图片大小多大以内  转成 base64
-  {
-  test:/\.(png,jpg,gif)\$/,
-  user:{
-  loder:'url-loader',
-  options:{
-  limit:10000 表示多少字节 1024 字节是 1kb
-  }
-  }
-  }
-- url-loader 可以处理 mp4|webm|ogg|mp3|wav|flac|aac
-- url-loder 可以处理各种字体格式 woff2?|eot|ttf|otf
-- file-loader 字体话一般建议用 file-loader，字体转 64 可能存在无法识别 file-loader 就是简单的复制粘贴
 
+```js
+{
+  test:/\.(png|jpg|gif)$/,
+  use:{
+  loder:'url-loader',
+   options:{
+    limit:10000 表示多少字节 1024 字节是 1kb
+  }
+ }
+}
 ```
 
+- url-loader 可以处理 mp4|webm|ogg|mp3|wav|flac|aac
+- url-loder 可以处理各种字体格式 woff2?|eot|ttf|otf
+- file-loader 字体话一般建议用 file-loader，字体转 base64 可能存在无法识别 file-loader 就是简单的复制粘贴
+
+```js
 {
 test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?._)?\$/,
 loader: 'url-loader',
-options: {
-limit: 0,
-}
+ options: {
+  limit: 0,
+ }
 },
 {
-test: /\.(woff2?|eot|ttf|otf)(\?._)?\$/,
+test: /\.(woff2?|eot|ttf|otf)(\?._)?$/,
 loader: 'url-loader',
 options: {
-limit: 0
-
-   }
- }
-
+  limit: 0
+  }
+}
 ```
 
 ## \* 打包文件分类
@@ -528,7 +538,7 @@ limit: 0
   options:{
   limit:1,
   outputPath:'/img/',
-  publicPath:'http://www.baidu.cn'
+  publicPath:'http://www.baidu.com'
   }
 
 ## webpack 配置篇
@@ -539,14 +549,66 @@ limit: 0
    清除缓存插件,可以写字符串 也可以写成数组
    new CleanWebpackPlugin();
    - 每次自动删除 dist 目录下的所有文件
-2. yarn add copy-webpack-plugin -D
-   拷贝插件
+2. npm install copy-webpack-plugin -D
+   拷贝插件 ./表示的是运行目录 dist
    new CopyWebpackPlugin([ //
-   {from:'img',to:'./'}
+   {from:'images',to:'./images'}
    ]),
 3. 版权插件 webpack 自带插件
    let webpack = require('webpack')
    new webpack.BannerPlugin('make 2019 by ry')
+   ## webpack 处理 跨域问题
+
+- webpack 自带 express
+
+### 跨域配置 推荐 nginx cors webpack 代理
+
+- 网页的访问过程 域名 ->dns 服务器进行 dns 解析 ip 地址  -> tcp 三次握手四次挥手 建立连接 ->通过你的请求返回数据进行渲染 ->手写一个网页的访问过程
+
+1.  代理的方式 重写的方式 把请求代理到 express 服务器上 访问一个网站默认访问的是 80 端口号 一个网页访问的过程
+
+- target 访问http://localhost:3000 等于访问 当前服务器下面 '/api'
+- pathRewrite 重写路径 /api/user 等于访问 localhost:3000/user
+
+```js
+
+devServer:{
+proxy:{ //
+ '/api':{
+  target:'http://localhost:3000',
+  pathRewrite:{'/api':''}
+  }// 配置了一个代理
+ }
+}
+```
+
+2.  直接使用 webpack 提供 mock 数据 webpack 自带 express
+
+- webpack 提供一个方法 before
+- 参数是 app app 就是 let app= express()
+
+```js
+before(app){
+ app.get('/user',(req,res)=>{
+  res.json({name:'leilei'})
+ })
+}
+```
+
+3. 可以直接在 node 的服务端启动 webpack 端口是服务端端口 不在需要 npm run dev 来启动 webpack
+
+- npm install webpack-dev-middleware -D
+  server.js 修改如下
+
+```
+let webpack = require('webpack');
+
+let middle = require('webpack-dev-middleware');
+
+let config = require('./   webpack.config.js');
+let compiler = webpack(config);
+app.use(middle(compiler));
+```
 
 ## 打包多页应用
 
@@ -636,63 +698,6 @@ new webpack.DefinePlugin({
 // 字符串必须要包两层
 'production':JSON.stringify('production'),
 }),
-
-```
-
-## webpack 处理 跨域问题
-
-- webpack 自带 express
-
-1. \*代理的方式 重写的方式 把请求代理到 express 服务器上
-
-- target 访问http://localhost:3000 等于访问 当前服务器下面 '/api'
-- pathRewrite 重写路径 /api/user 等于访问 localhost:3000/user
-
-```
-
-devServer:{
-...
-proxy:{ //
-'/api':{
-target:'http://localhost:3000',
-pathRewrite:{'/api':''}
-}// 配置了一个代理
-}
-}
-
-```
-
-2.  直接使用 webpack 提供 mock 数据 webpack 自带 express
-
-- webpack 提供一个方法 before
-- 参数是 app app 就是 let app= express()
-
-```
-
-before(app){
-app.get('/user',(req,res)=>{
-res.json({name:'leilei'})
-})
-}
-
-```
-
-3. 可以直接在 node 的服务端启动 webpack 端口是服务端端口 不在需要 npm run dev 来启动 webpack
-
-- yarn add webpack-dev-middleware -D
-  server.js 修改如下
-
-```
-
-let webpack = require('webpack');
-
-let middle = require('webpack-dev-middleware');
-
-let config = require('./webpack.config.js');
-
-let compiler = webpack(config);
-
-app.use(middle(compiler));
 
 ```
 
