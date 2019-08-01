@@ -3,5 +3,4 @@ body {
 }
 .abc {
   box-sizing: border-box;
-  background-image: url("./logo.jpg");
 }

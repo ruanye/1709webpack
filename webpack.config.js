@@ -8,6 +8,9 @@ const OptimizeCssAssetsWebpackPlugin = require('optimize-css-assets-webpack-plug
 const TerserWebpackPlugin = require('terser-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const VueLoaderPlugin = require('vue-loader/lib/plugin');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
+
 // module.exports -> node的模块导出
 module.exports = {
   mode: 'production', // 开发环境 development    生产环境 production
@@ -56,8 +59,13 @@ module.exports = {
     //   from:'images',
     //   to:'./images'
     // }])
+    new webpack.DefinePlugin({
+      production: JSON.stringify('production'),
+    }),
+    new VueLoaderPlugin(),
   ],
   module: {
+    noParse: /jquery/,
     // 模块处理 loader 模块解析器
     rules: [
       // rule规则 一堆规则 每一条规则是一个对象
@@ -97,6 +105,16 @@ module.exports = {
         test: /\.html$/,
         use: 'html-withimg-loader',
       },
+      {
+        test: /\.vue$/,
+        loader: 'vue-loader',
+        options: {
+          css: ExtractTextPlugin.extract({
+            use: 'css-loader',
+            fallback: 'vue-style-loader',
+          }),
+        },
+      },
     ],
   },
   // 配置优化项
@@ -107,4 +125,14 @@ module.exports = {
     // 配置忽略打包项
     // jquery: 'jQuery',
   },
+  resolve: {
+    extensions: ['.js', '.vue', '.json'], // 扩展名 可以省略中括号里面文件名结尾的文件名称
+    alias: {
+      // 别名
+      '@': path.resolve(__dirname, 'src'),
+      '&': path.resolve(__dirname, 'src/component'),
+      vue$: 'vue/dist/vue.esm.js',
+    },
+  },
+  devtool: 'eval-source-map',
 };

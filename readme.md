@@ -598,16 +598,63 @@ before(app){
 3. 可以直接在 node 的服务端启动 webpack 端口是服务端端口 不在需要 npm run dev 来启动 webpack
 
 - npm install webpack-dev-middleware -D
-  server.js 修改如下
+  app.js 修改如下
 
-```
-let webpack = require('webpack');
+```js
+let webpack = require("webpack");
 
-let middle = require('webpack-dev-middleware');
+let middle = require("webpack-dev-middleware");
 
-let config = require('./   webpack.config.js');
+let config = require("./   webpack.config.js");
 let compiler = webpack(config);
 app.use(middle(compiler));
+```
+
+## resolve 用法
+
+extensions 拓展名
+alias:别名 bootstrap:'bootstrap/dist/css/bootstrap.css'
+mainFields 可以配置先找哪个入口
+mainFiles：入口文件的名字
+
+```js
+resolve:{
+  modules:[path.resolve('node_modules')],
+ extensions:['.js','.css','.json','.vue'],
+ mainFields:['style','main']
+ mainFiles:[], // 入口文件的名字 index.js
+ alias:{
+  bootstrap:'bootstrap/dist/css/ bootstrap.css'
+ }
+}
+```
+
+## 配置 soure-map 源码映射
+
+文档地址 :https://webpack.docschina.org/configuration/devtool/
+
+```js
+devtool: "source-map";
+```
+
+- mode 改成开发环境 development
+- source-map 会单独生成一个 sourcemap 文件 可以帮我们调试源代码 会显示当前报错的列和行
+- eval-source-map 不会产生单独的文件 但是会显示报错的行和列
+- cheap-module-source-map 不会产生列 但是是一个单独的文件
+- cheap-module-eval-source-map 不会产生文件也不会产生列 会直接集成在文件里
+
+##配置环境变量
+node 提供的环境变量:process.env.NODE_ENV
+根据 wepack 配置的 mode 值
+
+```
+
+new webpack.DefinePlugin({
+// 字符串必须要包两层
+'production':JSON.stringify('production'),
+ 'process.env.pro': JSON.stringify('production'),
+}),
+
 ```
 
 ## 打包多页应用
@@ -652,73 +699,6 @@ hash:true, // ? 后面的名字
 template:'./public/index.html'
 })
 })
-
-```
-
-## 配置 soure-map 源码映射
-
-文档地址 :https://webpack.docschina.org/configuration/devtool/
-
-```
-
-devtool:'source-map'
-
-```
-
-- source-map 会单独生成一个 sourcemap 文件 可以帮我们调试源代码 会显示当前报错的列和行
-
-- eval-source-map 不会产生单独的文件 但是会显示报错的行和列
-
-- cheap-module-source-map 不会产生列 但是是一个单独的文件
-- cheap-module-eval-source-map 不会产生文件也不会产生列 会直接集成在文件里
-
-## 实时编译
-
-watch:true
-
-- 监控的选项
-
-```
-
-watchOptions:{
-poll:1000 //每秒问我多少次
-aggreatmentTimeout:500 //防抖 一直输入代码
-ignored:/node_modules/
-}
-
-```
-
-##配置环境变量
-node 提供的环境变量:process.env.NODE_ENV
-根据 wepack 配置的 mode 值
-
-```
-
-new webpack.DefinePlugin({
-// 字符串必须要包两层
-'production':JSON.stringify('production'),
-}),
-
-```
-
-## resolve 用法
-
-extensions 拓展名
-alias:别名 bootstrap:'bootstrap/dist/css/bootstrap.css'
-mainFields 可以配置先找哪个入口
-mainFiles：入口文件的名字
-
-```
-
-resolve:{
-modules:[path.resolve('node_modules')],
-extensions:['.js','.css','.json','.vue'],
-mainFields:['style','main']
-mainFiles:[], // 入口文件的名字 index.js
-alias:{
-bootstrap:'bootstrap/dist/css/bootstrap.css'
-}
-}
 
 ```
 
@@ -812,13 +792,11 @@ usedExports:true // 在开发中可以看到哪个包/方法被使用了，其�
 
 2. 自带优化 scope-hosting 作用域提升
 
-```
-
+```js
 let a = 1;
-let b= 2;
-let c = a+b;
+let b = 2;
+let c = a + b;
 console.log(c);
-
 ```
 
 > 把变量进行压缩，去提取模块中的导出的变量
@@ -828,8 +806,9 @@ console.log(c);
    noParse: /jquery/, // 不去解析 jquery 中的依赖库
    ...
    }
+   ***
 4. 懒加载 import() es6 草案中的语法
-   yarn add @babel/plugin-syntax-dynamic-import -D
+   npm install @babel/plugin-syntax-dynamic-import -D
    - src
      - index.js
      - a.js
@@ -837,7 +816,6 @@ console.log(c);
 - a.js 内容
 
 ```
-
 export default 1234;
 export const b = 3;
 
@@ -846,7 +824,6 @@ export const b = 3;
 - index.js 内容
 
 ```
-
 let btn = document.createElement('button');
 btn.innerHTML = '点击实现异步加载';
 btn.addEventListener('click', async function() {
@@ -865,7 +842,7 @@ document.body.appendChild(btn);
 ```
 
 devServer:{
-hot:true
+ hot:true
 }
 
 ```
@@ -953,24 +930,24 @@ use: ['style-loader', 'css-loader']
 
 6. 抽离公共代码(多入口)
 
-```
+```js
 
 optimization:{ // commonChunkPlugins
 splitChunks:{ // 分割代码块
-cacheGroups:{ // 缓存组
-common:{ // 公共的模块
-chunks:'initial',
-minSize:0,
-minChunks:2,
+ cacheGroups:{ // 缓存组
+ common:{ // 公共的模块
+  chunks:'initial',
+ minSize:0,
+ minChunks:2,
 },
 vendor:{ //第三方模块
-priority:1, //权重
-test:/node_modules/, // 把你抽离出来
-chunks: 'initial',
-minSize: 0,
-minChunks: 2
-}
-}
+  priority:1, //权重
+  test:/node_modules/, // 把你抽离出来
+  chunks: 'initial',
+  minSize: 0,
+  minChunks: 2
+  }
+  }
 }
 }
 
@@ -979,85 +956,97 @@ minChunks: 2
 wepack 框架配置 vue 的使用
 
 - 使用 vue 模板需要写 template
-  yarn add vue vue-loader vue-template-compiler
+  npm install vue vue-loader vue-template-compiler
 - vue-loader 解析 vue 文件
 - vue-template-compiler 解析 vue 中的 template
 
 1. 配置扩展名和别名
 
 - https://cn.vuejs.org/v2/guide/installation.html#%E5%AF%B9%E4%B8%8D%E5%90%8C%E6%9E%84%E5%BB%BA%E7%89%88%E6%9C%AC%E7%9A%84%E8%A7%A3%E9%87%8A
-  resolve:{
+
+```js
+resolve:{
   extensions: ['.js','.vue','.json'],
   alias: { //开发环境使用 vue.esm.js
-  'vue\$': 'vue/dist/vue.esm.js', // 加入这句话
+   'vue$': 'vue/dist/vue.esm.js', // 加入这句话
   }
-  },
+}
+```
 
 2. vue-loader 需要使用 vueLoaderPlugin 插件
 
-```
-
+```js
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
 plugins: [
-new VueLoaderPlugin()
-]
+  new VueLoaderPlugin()
+ ]
 }
-
 ```
 
 3. 配置 loader 解析 vue 文件
 
-```
-
-module.exports = {
-module: {
-rules: [
-...
+```js
 {
-test: /\.vue$/,
-loader: 'vue-loader'
+ test: /\.vue$/,
+ loader: 'vue-loader'
 }
-]
-},
-
 ```
 
 VueLoaderPlugin 这个插件的职责是将你定义过的其它规则复制并应用到 .vue 文件里相应语言的块。例如，如果你有一条匹配 /\.js\$/ 的规则，那么它会应用到 .vue 文件里的 <script> 块。
 
-现在我们就可以按照 vue 模板的形式来编写代码了。 4.解决 vue 里面样式的问题 yarn add vue-style-loader
-odule.exports = {
-// other options...
-module: {
-rules: [
-{
-test: /\.vue$/,
-loader: 'vue-loader',
-options: {
-loaders: {
-css: ExtractTextPlugin.extract({
-use: 'css-loader',
-fallback: 'vue-style-loader' // 这是 vue-loader 的依赖
-})
-}
-}
-}
-]
+现在我们就可以按照 vue 模板的形式来编写代码了。
 
+4. 解决 vue 里面样式的问题 npm install vue-style-loader extract-text-webpack-plugin
+
+```js
+{
+ test: /\.vue$/,
+ loader: 'vue-loader',
+  options: {
+  loaders: {
+   css: ExtractTextPlugin.extract({
+      fallback: 'vue-style-loader'
+      use: 'css-loader',
+     })
+   }
+ }
+}
 ```
 
+vue inspect > v.js
+
+```html
 <template>
-    <div class="divWrap"></div>
+  <div class="divWrap"></div>
 </template>
 <script>
-export default {
-    data(){
-        return {}
+  export default {
+    data() {
+      return {};
     },
-    created(){},
-    methods:{}
-}
+    created() {},
+    methods: {}
+  };
 </script>
 <style scoped>
-.divWrap{}
+  .divWrap {
+  }
 </style>
-```
+``` 
+### // react基础模块
+1. 下载react和react-dom 包 
+npm i -S react react-dom
+
+
+2. 下载转化react语法的包 
+// babel转换react所需presets
+npm install --save-dev @babel/preset-react 
+.babelrc 文件里面进行配置
+{
+    "presets": [
+        "react" 
+    ],
+    "plugins":[
+        "transform-runtime"
+    ]
+}
