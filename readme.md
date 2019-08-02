@@ -708,69 +708,26 @@ webpack.config.js 改成 webpack.base.js
 新建文件 webpack.prod.js 和 webpack.dev.js
 
 - 配置开发环境的写法
-
-```
-
-webpack.dev.js
-let {smart} = require('webpack-merge');
-let base = require('./webpack.base.js');
-
-module.exports = smart(base,{
-mode: 'development',
-devServer:{
-
-},
-devtool:'source-map'
-})
-
-```
-
-- 配置生产环境的写法
-
-```
-
-let {smart} = require('webpack-merge');
-let base = require('./webpack.base.js');
-
-module.exports = smart(base,{
-mode: 'production',
-optimization:{
-minimizer:[
-
-     ]
-
-},
-plugins:[]
-})
-
-```
-
-最新配置方案
-
-```
-
 package.json 配置
-
-```
-
+```js
 scripts": {
-"dev":"webpack-dev-server --env.development --config ./build/webpack.config.js",
-"build": "webpack --env.production --config ./build/webpack.config.js"
+  "dev":"webpack-dev-server --env.development --config ./build/webpack.config.js",
+  "build": "webpack --env.production --config ./build/webpack.config.js"
 }
-
 ```
+npm install webpack-merge
+```js
 
 let merge = require('webpack-merge');
 module.exports = (env) => {
 console.log(process.env.xxx); // 可以通过 cross-env 来设置环境变量
 if(env.production){
 // 生产环境
-return merge(base,prod);
-}else{
-return merge(base,dev);
+ return merge(base,prod);
+ }else{
+   return merge(base,dev);
 }
 }
-
 ```
 
 ## webpack 优化
@@ -1032,21 +989,22 @@ vue inspect > v.js
   .divWrap {
   }
 </style>
-``` 
-### // react基础模块
-1. 下载react和react-dom 包 
+```
+
+### // react 基础模块
+
+1. 下载 react 和 react-dom 包
 npm i -S react react-dom
 
+2. 下载转化 react 语法的包
+   // babel 转换 react 所需 presets
+   npm install --save-dev @babel/preset-react
+   .babelrc 文件里面进行配置
 
-2. 下载转化react语法的包 
-// babel转换react所需presets
-npm install --save-dev @babel/preset-react 
-.babelrc 文件里面进行配置
+```js
 {
-    "presets": [
-        "react" 
-    ],
-    "plugins":[
-        "transform-runtime"
-    ]
+  "presets": [
+   '@babel/preset-react'
+  ],
 }
+```
